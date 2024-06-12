@@ -1,10 +1,11 @@
 {
-    "name": "technicaltask/apicrud",
+    "name": "package/apicrud",
     "description": "package development",
     "license": "no",
     "autoload": {
         "psr-4": {
-            "Technicaltask\\Apicrud\\": "src/"
+            "Package\\Apicrud\\": "src/",
+			"App\\": "app/"
         }
     },
     "authors": [
