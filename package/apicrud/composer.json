@@ -1,0 +1,16 @@
+{
+    "name": "technicaltask/apicrud",
+    "description": "package development",
+    "license": "no",
+    "autoload": {
+        "psr-4": {
+            "Technicaltask\\Apicrud\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "meheady"
+        }
+    ],
+    "require": {}
+}
