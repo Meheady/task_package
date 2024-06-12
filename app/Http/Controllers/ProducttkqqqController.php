@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use {{ rootNamespace }}Http\Controllers\Controller;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class {{ class }} extends Controller
+class ProducttkqqqController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +14,9 @@ class {{ class }} extends Controller
      */
     public function index()
     {
-        {{ index }}
+        $index=\Illuminate\Support\Facades\Cache::remember('Producttkqqq', 84000, function () {
+return \App\Models\Producttkqqq::all();
+});
 
         return response()->json($index,200);
     }
@@ -27,7 +29,10 @@ class {{ class }} extends Controller
      */
     public function store(Request $request)
     {
-        {{ store }}
+        \Illuminate\Support\Facades\Cache::forget('Producttkqqq');
+$validData=$request->validate([]);
+\App\Models\Producttkqqq::create($validData);
+
 
         return response()->json(['message'=>'Created Successfully'],200);
     }
@@ -40,7 +45,8 @@ class {{ class }} extends Controller
      */
     public function show($id)
     {
-        {{ show }}
+        $show=\App\Models\Producttkqqq::findOrFail($id);
+
 
         return response()->json($show,200);
     }
@@ -54,7 +60,10 @@ class {{ class }} extends Controller
      */
     public function update(Request $request, $id)
     {
-        {{ update }}
+        \Illuminate\Support\Facades\Cache::forget('Producttkqqq');
+$validData=$request->validate([]);
+\App\Models\Producttkqqq::where('id',$id)->update($validData);
+
 
         return response()->json(['message'=>'Updated Successfully'],200);
     }
@@ -67,7 +76,9 @@ class {{ class }} extends Controller
      */
     public function destroy($id)
     {
-        {{ destroy }}
+        \Illuminate\Support\Facades\Cache::forget('Producttkqqq');
+\App\Models\Producttkqqq::findOrFail($id)->delete();
+
 
         return response()->json(['message'=>'Deleted Successfully'],200);
     }

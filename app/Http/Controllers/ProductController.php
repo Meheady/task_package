@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class testController extends Controller
+class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,11 +14,11 @@ class testController extends Controller
      */
     public function index()
     {
-        $index=\Illuminate\Support\Facades\Cache::remember('test', 84000, function () {
-return \App\Models\test::all();
+        $index=\Illuminate\Support\Facades\Cache::remember('Product', 84000, function () {
+return \App\Models\Product::all();
 });
 
-        return view('index',$index);
+        return response()->json($index,200);
     }
 
     /**
@@ -29,15 +29,12 @@ return \App\Models\test::all();
      */
     public function store(Request $request)
     {
-        \Illuminate\Support\Facades\Cache::forget('test');
-$validData=$request->validate(['id' => 'required',
-'created_at' => 'required',
-'updated_at' => 'required',
-]);
-\App\Models\test::create($validData);
+        \Illuminate\Support\Facades\Cache::forget('Product');
+$validData=$request->validate([]);
+\App\Models\Product::create($validData);
 
 
-        return back();
+        return response()->json(['message'=>'Created Successfully'],200);
     }
 
     /**
@@ -48,10 +45,10 @@ $validData=$request->validate(['id' => 'required',
      */
     public function show($id)
     {
-        $show=\App\Models\test::findOrFail($id);
+        $show=\App\Models\Product::findOrFail($id);
 
 
-        return view('show',$show);
+        return response()->json($show,200);
     }
 
     /**
@@ -63,15 +60,12 @@ $validData=$request->validate(['id' => 'required',
      */
     public function update(Request $request, $id)
     {
-        \Illuminate\Support\Facades\Cache::forget('test');
-$validData=$request->validate(['id' => 'sometimes',
-'created_at' => 'sometimes',
-'updated_at' => 'sometimes',
-]);
-\App\Models\test::where('id',$id)->update($validData);
+        \Illuminate\Support\Facades\Cache::forget('Product');
+$validData=$request->validate([]);
+\App\Models\Product::where('id',$id)->update($validData);
 
 
-        return back();
+        return response()->json(['message'=>'Updated Successfully'],200);
     }
 
     /**
@@ -82,10 +76,10 @@ $validData=$request->validate(['id' => 'sometimes',
      */
     public function destroy($id)
     {
-        \Illuminate\Support\Facades\Cache::forget('test');
-\App\Models\test::findOrFail($id)->delete();
+        \Illuminate\Support\Facades\Cache::forget('Product');
+\App\Models\Product::findOrFail($id)->delete();
 
 
-        return back();
+        return response()->json(['message'=>'Deleted Successfully'],200);
     }
 }

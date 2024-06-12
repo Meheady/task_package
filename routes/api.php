@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\ProductController;
+
+use App\Http\Controllers\ProducttkqqqController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +21,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
+Route::apiResource('producttkqqqs', ProducttkqqqController::class);
+
+Route::apiResource('products', ProductController::class);
