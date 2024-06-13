@@ -159,7 +159,7 @@ return [
         /*
          * Package Service Providers...
          */
-        Package\Apicrud\ApiCrudServiceProvider::class,
+        \Package\Apicrud\ApiCrudServiceProvider::class,
         /*
          * Application Service Providers...
          */

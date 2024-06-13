@@ -16,14 +16,14 @@ class CrudCommand extends GeneratorCommand
      *
      * @var string
      */
-    protected $signature = 'make:crud {name} {--option=}';
+    protected $signature = 'make:crud {name} {--columns=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new CRUD. Example: php artisan crud:make {name}=Model Name';
+    protected $description = 'Create a new CRUD. Example: php artisan make:crud {name} --columns=title:string,content:text,author_id:integer';
 
     /**
      * Execute the console command.
@@ -31,49 +31,46 @@ class CrudCommand extends GeneratorCommand
      * @return int
      */
     protected $name;
-protected $namePlural;
-protected $route;
+    protected $namePlural;
+    protected $route;
+    protected $columns;
 
     public function handle()
     {
-        $this->name = $this->argument('name');
+        $this->name = $this->argument('name'); // using this name create Controller, model, migration file name and classes
+
         $this->namePlural = Str::plural($this->name);
+        $this->columns = $this->option('columns');
         $this->route = strtolower(Str::kebab($this->namePlural));
 
+        // start Create Model
         $modelstub = $this->getModelStub();
         $modelstub =  $this->generateModelCode($modelstub);
         $this->makeModel($modelstub);
+        // end create model
 
+        // start Create Controller with crud methods
         $stub = $this->getStub();
         $stub = $this->generateCrudCode($stub);
         $this->makeController($stub);
+        // end controller
 
 
+        // generate migration file
         $migrationStub = $this->getMigrationStub();
         $migrationCode = $this->generateMigrationCode($migrationStub);
         $this->makeMigration($migrationCode);
+        // end migration
 
+        // create api resource route
         $routeStub = $this->getRouteStub();
         $routeCode = $this->generateRouteCode($routeStub);
         $this->addRoute($routeCode);
-        $this->info('Created Controllerc,Model,Migration, Route');
+        // end route
 
-         $this->runMigration();
+        $this->info('Created Controller,Model,Migration, Route');
     }
 
-    private function generateRoute($type,$contoller,$method){
-        try {
-            file_put_contents(
-                base_path('routes/api.php'),
-                "Route::$type(['$contoller','$method'])",
-                FILE_APPEND
-            );
-            return true;
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage());
-        }
-
-    }
     protected function generateCrudCode($stub)
     {
         $cruds = ["edit", "index", "show", "store", "update", "destroy"];
@@ -96,7 +93,7 @@ protected $route;
     protected function generateModelCode($stub)
     {
         try {
-            $className = $this->name;  // Assumes $this->name is set to the class name you want to use
+            $className = $this->name;  // $this->name is set to the class name you want to use
         return str_replace("{{ class }}", $className, $stub);
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
@@ -109,10 +106,27 @@ protected $route;
             $className = $this->name;
             $classPlural = $this->namePlural;
             $tableName = strtolower($classPlural);
-            return str_replace(["{{ class }}", "{{ classPlural }}", "{{ table }}"], [$className, $classPlural, $tableName], $stub);
+
+            $columnsCode = $this->generateMigrationColumnsCode();
+
+            return str_replace(["{{ class }}", "{{ classPlural }}", "{{ table }}", "{{ columns }}"], [$className, $classPlural, $tableName, $columnsCode], $stub);
         } catch (\Exception $e) {
             return $this->error($e->getMessage());
         }
+    }
+
+    protected function generateMigrationColumnsCode()
+    {
+        $columns = $this->columns;
+        $columnsArray = explode(',', $columns);
+        $columnsCode = '';
+
+        foreach ($columnsArray as $column) {
+            list($name, $type) = explode(':', $column);
+            $columnsCode .= "\$table->$type('$name');\n";
+        }
+
+        return $columnsCode;
     }
 
     protected function getStub()
@@ -132,7 +146,12 @@ protected $route;
     }
     protected function makeController($stub)
     {
-        $path = app_path('Http/Controllers/' . $this->name . 'Controller.php');
+        $directory = app_path('Http/Controllers/Api/V1');
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
+
+        $path = app_path('Http/Controllers/Api/V1/' . $this->name . 'Controller.php');
 
         File::put($path, $stub);
     }
@@ -171,7 +190,7 @@ protected $route;
         $path = base_path('routes/api.php');
         $existingContent = file_get_contents($path);
 
-        $useStatement = "use App\Http\Controllers\\{$this->name}Controller;";
+        $useStatement = "use App\Http\Controllers\Api\V1\\{$this->name}Controller;";
         if (strpos($existingContent, $useStatement) === false) {
             $existingContent = "<?php\n\n{$useStatement}\n" . substr($existingContent, 6);
         }
@@ -183,10 +202,6 @@ protected $route;
         file_put_contents($path, $existingContent);
     }
 
-    protected function runMigration()
-    {
-        \Artisan::call('migrate');
-    }
     protected function getColumns()
     {
         $model = "App\Models\\$this->name";
@@ -200,7 +215,10 @@ protected $route;
     {
         $validate = "";
         foreach ($this->getColumns() as $key => $value) {
-            $validate .= "'$value' => 'required',\n";
+            if ($value != 'id' && $value != 'updated_at' && $value != 'created_at'){
+                $validate .= "'$value' => 'required',\n";
+            }
+
         }
         $store = "\Illuminate\Support\Facades\Cache::forget('$this->name');\n";
         $store .= "\$validData=\$request->validate([" . $validate . "]);\n";
@@ -211,7 +229,11 @@ protected $route;
     {
         $validate = "";
         foreach ($this->getColumns() as $key => $value) {
-            $validate .= "'$value' => 'sometimes',\n";
+
+            if ($value !== 'id' && $value !== 'created_at' && $value !== 'updated_at'){
+                $validate .= "'$value' => 'sometimes',\n";
+            }
+
         }
         $update = "\Illuminate\Support\Facades\Cache::forget('$this->name');\n";
         $update .= "\$validData=\$request->validate([" . $validate . "]);\n";

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class ProducttkqqqController extends Controller
+class ProductController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -14,8 +14,8 @@ class ProducttkqqqController extends Controller
      */
     public function index()
     {
-        $index=\Illuminate\Support\Facades\Cache::remember('Producttkqqq', 84000, function () {
-return \App\Models\Producttkqqq::all();
+        $index=\Illuminate\Support\Facades\Cache::remember('Product', 84000, function () {
+return \App\Models\Product::all();
 });
 
         return response()->json($index,200);
@@ -29,9 +29,10 @@ return \App\Models\Producttkqqq::all();
      */
     public function store(Request $request)
     {
-        \Illuminate\Support\Facades\Cache::forget('Producttkqqq');
-$validData=$request->validate([]);
-\App\Models\Producttkqqq::create($validData);
+        \Illuminate\Support\Facades\Cache::forget('Product');
+$validData=$request->validate(['name' => 'required',
+]);
+\App\Models\Product::create($validData);
 
 
         return response()->json(['message'=>'Created Successfully'],200);
@@ -45,7 +46,7 @@ $validData=$request->validate([]);
      */
     public function show($id)
     {
-        $show=\App\Models\Producttkqqq::findOrFail($id);
+        $show=\App\Models\Product::findOrFail($id);
 
 
         return response()->json($show,200);
@@ -60,9 +61,10 @@ $validData=$request->validate([]);
      */
     public function update(Request $request, $id)
     {
-        \Illuminate\Support\Facades\Cache::forget('Producttkqqq');
-$validData=$request->validate([]);
-\App\Models\Producttkqqq::where('id',$id)->update($validData);
+        \Illuminate\Support\Facades\Cache::forget('Product');
+$validData=$request->validate(['name' => 'sometimes',
+]);
+\App\Models\Product::where('id',$id)->update($validData);
 
 
         return response()->json(['message'=>'Updated Successfully'],200);
@@ -76,8 +78,8 @@ $validData=$request->validate([]);
      */
     public function destroy($id)
     {
-        \Illuminate\Support\Facades\Cache::forget('Producttkqqq');
-\App\Models\Producttkqqq::findOrFail($id)->delete();
+        \Illuminate\Support\Facades\Cache::forget('Product');
+\App\Models\Product::findOrFail($id)->delete();
 
 
         return response()->json(['message'=>'Deleted Successfully'],200);
