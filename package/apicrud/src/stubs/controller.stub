@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use {{ rootNamespace }}Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class {{ class }} extends Controller
 {
@@ -29,7 +30,16 @@ class {{ class }} extends Controller
     {
         {{ store }}
 
-        return response()->json(['message'=>'Created Successfully'],200);
+
+        if ($validData->fails()){
+              return $validData->errors();
+           }
+        if (!$saveData){
+              return response()->json(['message'=>'Try again data not store'],400);
+           }
+           else{
+               return response()->json(['message'=>'Created Successfully'],200);
+           }
     }
 
     /**
@@ -56,7 +66,14 @@ class {{ class }} extends Controller
     {
         {{ update }}
 
-        return response()->json(['message'=>'Updated Successfully'],200);
+        if ($validData->fails()){
+              return $validData->errors();
+           }
+        if (!$saveData){
+             return response()->json(['message'=>'Try again data not store'],400);
+           }else{
+              return response()->json(['message'=>'update Successfully'],200);
+           }
     }
 
     /**

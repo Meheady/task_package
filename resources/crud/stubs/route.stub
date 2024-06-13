@@ -1,5 +1,0 @@
-
-use App\Http\Controllers\{{ class }}Controller;
-
-
-Route::resource('{{ route }}', {{ class }}Controller::class);

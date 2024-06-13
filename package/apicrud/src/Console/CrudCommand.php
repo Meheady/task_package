@@ -213,31 +213,33 @@ class CrudCommand extends GeneratorCommand
     }
     protected function store()
     {
-        $validate = "";
-        foreach ($this->getColumns() as $key => $value) {
-            if ($value != 'id' && $value != 'updated_at' && $value != 'created_at'){
-                $validate .= "'$value' => 'required',\n";
-            }
+        $columns = $this->columns;
+        $columnsArray = explode(',', $columns);
 
+        $validate = "";
+        foreach ($columnsArray as $column) {
+            list($name, $type) = explode(':', $column);
+            $validate .= "'$name' => 'required',\n";
         }
+
         $store = "\Illuminate\Support\Facades\Cache::forget('$this->name');\n";
-        $store .= "\$validData=\$request->validate([" . $validate . "]);\n";
-        $store .= "\App\Models\\$this->name::create(\$validData);\n";
+        $store .= "\$validData=Validator::make(\$request->all(),[" . $validate . "]);\n";
+        $store .= "\$saveData=\App\Models\\$this->name::create(\$request->all());\n";
         return $store;
     }
     protected function update()
     {
+        $columns = $this->columns;
+        $columnsArray = explode(',', $columns);
+
         $validate = "";
-        foreach ($this->getColumns() as $key => $value) {
-
-            if ($value !== 'id' && $value !== 'created_at' && $value !== 'updated_at'){
-                $validate .= "'$value' => 'sometimes',\n";
-            }
-
+        foreach ($columnsArray as $column) {
+            list($name, $type) = explode(':', $column);
+            $validate .= "'$name' => 'sometimes',\n";
         }
         $update = "\Illuminate\Support\Facades\Cache::forget('$this->name');\n";
-        $update .= "\$validData=\$request->validate([" . $validate . "]);\n";
-        $update .= "\App\Models\\$this->name::where('id',\$id)->update(\$validData);\n";
+        $update .= "\$validData=Validator::make(\$request->all(),[" . $validate . "]);\n";
+        $update .= "\$saveData=\App\Models\\$this->name::where('id',\$id)->update(\$request->all());\n";
 
         return $update;
     }
